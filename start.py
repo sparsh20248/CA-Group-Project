@@ -12,8 +12,7 @@ class Port:
         return self.output
 
 class Router:
-
     def __init__(self, name):
         self.name = name
-        self.Port = Port("port_north", direction)
+        # self.Port = Port("port_north", direction)
 
