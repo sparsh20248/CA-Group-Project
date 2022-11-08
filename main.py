@@ -27,7 +27,69 @@ class Input:
     
     def get_path(self):
         #path according to the routing algo: Midsem = XY
-        self.source == '1' and self.destination == '2'
+        if self.source==self.destination:
+            return
+        if self.source == "1":
+
+            if self.destination == "2":
+                self.path.append("1")
+                self.path.append("2")
+
+            if self.destination == "3":
+                self.path.append("1")
+                self.path.append("2")
+                self.path.append("3")
+
+            if self.destination == "4":
+                self.path.append("1")
+                self.path.append("4")
+
+
+        if self.source == "2":
+
+            if self.destination == "1":
+                self.path.append("2")
+                self.path.append("1")
+
+            if self.destination == "3":
+                self.path.append("2")
+                self.path.append("3")
+
+            if self.destination == "4":
+                self.path.append("2")
+                self.path.append("1")
+                self.path.append("4")
+
+        if self.source == "3":
+
+            if self.destination == "1":
+                self.path.append("3")
+                self.path.append("4")
+                self.path.append("1")
+
+            if self.destination == "2":
+                self.path.append("3")
+                self.path.append("2")
+
+            if self.destination == "4":
+                self.path.append("3")
+                self.path.append("4")
+
+        if self.source == "4":
+
+            if self.destination == "1":
+                self.path.append("4")
+                self.path.append("1")
+
+            if self.destination == "2":
+                self.path.append("4")
+                self.path.append("3")
+                self.path.append("2")
+
+            if self.destination == "3":
+                self.path.append("4")
+                self.path.append("3")
+
         return
         
     
@@ -58,7 +120,6 @@ class NoC:
             self.trafic4.sort(key=lambda x: x.clock_cycle)
             
     def perform(self):
-        
         
         return 
         
@@ -91,6 +152,32 @@ class NoC:
                 get_path = i.get_path()
                 for path in get_path:
                     pass
+
+                    if(path=="1"):
+                        self.l1.busy = True
+                        self.l2.busy = False
+                        self.l3.busy = False
+                        self.l4.busy = False
+
+                    if(path=="2"):
+                        self.l2.busy = True
+                        self.l1.busy = False
+                        self.l3.busy = False
+                        self.l4.busy = False
+
+                    if(path=="3"):
+                        self.l3.busy = True
+                        self.l1.busy = False
+                        self.l2.busy = False
+                        self.l4.busy = False
+
+                    if(path=="4"):
+                        self.l4.busy = True
+                        self.l1.busy = False
+                        self.l2.busy = False
+                        self.l3.busy = False
+
+                    
                     #check if the link is busy or free, if free, send the packet
                     
                     # if tail is sent then i.sucess = True
@@ -114,5 +201,3 @@ class NoC:
 class Router:
     input = ""
     output = ""
-    
-    
