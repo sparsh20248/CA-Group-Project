@@ -1,6 +1,8 @@
 from dis import Instruction
 from input import list_of_instructions
 
+printf("Hello World")
+
 
 class Link:
     input = False
