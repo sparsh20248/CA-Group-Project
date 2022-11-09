@@ -1,14 +1,20 @@
-Clock cycle: 0 Flit: (head sending 0) Source: 1 Destination: 4
-Clock cycle: 0 Flit: (head sending 0) Source: 3 Destination: 2
+Clock cycle: 0 Flit: Head Source: 1 Destination: 4
+Clock cycle: 0 Flit: Head Source: 3 Destination: 2
 Clock cycle: 1 Flit: flit 1 Source: 1 Destination: 4
 Clock cycle: 1 Flit: flit 1 Source: 3 Destination: 2
 Clock cycle: 2 Flit: flit 2 Source: 1 Destination: 4
 Clock cycle: 2 Flit: flit 2 Source: 3 Destination: 2
 Clock cycle: 3 Flit: flit 3 Source: 1 Destination: 4
 Clock cycle: 3 Flit: flit 3 Source: 3 Destination: 2
-Clock cycle: 4 Flit: (tail sending 0) Source: 1 Destination: 4
-Clock cycle: 4 Flit: (tail sending 0) Source: 3 Destination: 2
-Clock cycle: 5 Flit: (head sending 0) Source: 2 Destination: 4
-Clock cycle: 6 Flit: (head sending 1) Source: 2 Destination: 4
-Clock cycle: 7 Flit: flit 1 Source: 2 Destination: 4
-Clock cycle: 9 Flit: flit 2 Source: 2 Destination: 4
+Clock cycle: 4 Flit: Tail Source: 1 Destination: 4
+Clock cycle: 4 Flit: Tail Source: 3 Destination: 2
+Clock cycle: 5 Flit: Head Source: 2 Destination: 1
+Clock cycle: 6 Flit: Head Source: 1 Destination: 4
+Clock cycle: 7 Flit: flit 1 Source: 2 Destination: 1
+Clock cycle: 8 Flit: flit 1 Source: 1 Destination: 4
+Clock cycle: 9 Flit: flit 2 Source: 2 Destination: 1
+Clock cycle: 10 Flit: flit 2 Source: 1 Destination: 4
+Clock cycle: 11 Flit: flit 3 Source: 2 Destination: 1
+Clock cycle: 12 Flit: flit 3 Source: 1 Destination: 4
+Clock cycle: 13 Flit: Tail Source: 2 Destination: 1
+Clock cycle: 14 Flit: Tail Source: 1 Destination: 4

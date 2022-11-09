@@ -23,7 +23,13 @@ class Router:
         self.counter = 0
 
     def update(self,instruction, clock_cyle, statement):
-        L = ["Clock cycle: ", str(clock_cyle) + " ", "Flit: ", str(statement) + " ", "Source: ", str(instruction.source) + " ", "Destination: ", str(instruction.destination), "\n"]
+        if len(instruction.path) == 1:
+            L = ["Clock cycle: ", str(clock_cyle) + " ", "Flit: ", str(statement) + " ", "Source: ", instruction.source + " ", "Destination: ", instruction.destination, "\n"]
+        else:
+            if instruction.counter%2== 0 or instruction.head_sent == 0 or instruction.tail_next == 0:
+                L = ["Clock cycle: ", str(clock_cyle) + " ", "Flit: ", str(statement) + " ", "Source: ", instruction.source + " ", "Destination: ", str(instruction.path[0]), "\n"]
+            else:
+                L = ["Clock cycle: ", str(clock_cyle) + " ", "Flit: ", str(statement) + " ", "Source: ", str(instruction.path[0]) + " ", "Destination: ", instruction.destination, "\n"]
         outfile.writelines(L)
         # print("Clock cycle:", clock_cyle, "Flit:", statement, "Source:", instruction.source, "Destination:", instruction.destination)
         return 
@@ -109,14 +115,14 @@ class Instruction:
 
         return self.path
 
-def print_list(list):
-    for i in list:
-        print("Source:",i.source,"Destination:",i.destination)
+# def print_list(list):
+#     for i in list:
+#         print("Source:",i.source,"Destination:",i.destination)
 
-def Print(list):
-    for i in list:
-        # print(i)
-        print(i)
+# def Print(list):
+#     for i in list:
+#         # print(i)
+#         print(i)
 
 class NoC:
     trafic1 = []
@@ -188,24 +194,26 @@ class NoC:
                 queue_temp = queue.copy()
                 get_path = instruction.get_path()
                 # print(get_path)
+                #print("Clock Cycle: ",clock_cycle,"Source: ", instruction.source ,instruction.head_sent, instruction.tail_next)
                 if instruction.head_sent < len(get_path):  
                     if get_path[instruction.head_sent] == "1":
-                        self.r1.update(instruction,clock_cycle,  "(head sending {})".format(instruction.head_sent))
+                        self.r1.update(instruction,clock_cycle,  "Head")
                     elif get_path[instruction.head_sent] == "2":
-                        self.r2.update(instruction, clock_cycle,  "(head sending {})".format(instruction.head_sent))
+                        self.r2.update(instruction, clock_cycle,  "Head")
                     elif get_path[instruction.head_sent] == "3":
-                        self.r3.update(instruction, clock_cycle, "(head sending {})".format(instruction.head_sent))
+                        self.r3.update(instruction, clock_cycle, "Head")
                     elif get_path[instruction.head_sent] == "4":
-                        self.r4.update(instruction, clock_cycle, "(head sending {})".format(instruction.head_sent))
+                        self.r4.update(instruction, clock_cycle, "Head")
                     
                     instruction.head_sent += 1
                     
                     if instruction.head_sent == len(get_path):
                         instruction.head_sent = 3
                         instruction.counter = 0
-                                
+
+
                 elif instruction.head_sent == 3 and instruction.tail_next == -1:
-                    if instruction.counter / len(get_path) == 0:
+                    if instruction.counter // len(get_path) == 0:
                             if(get_path[instruction.counter % len(get_path)] == "1"):
                                 self.r1.update(instruction, clock_cycle, "flit 1")
                             if(get_path[instruction.counter % len(get_path)] == "2"):
@@ -214,7 +222,7 @@ class NoC:
                                 self.r3.update(instruction, clock_cycle, "flit 1")
                             if(get_path[instruction.counter % len(get_path)] == "4"):
                                 self.r4.update(instruction, clock_cycle, "flit 1")
-                    if instruction.counter / len(get_path) == 1:
+                    if instruction.counter // len(get_path) == 1:
                             if(get_path[instruction.counter % len(get_path)] == "1"):
                                 self.r1.update(instruction, clock_cycle, "flit 2")
                             if(get_path[instruction.counter % len(get_path)] == "2"):
@@ -223,7 +231,7 @@ class NoC:
                                 self.r3.update(instruction, clock_cycle, "flit 2")
                             if(get_path[instruction.counter % len(get_path)] == "4"):
                                 self.r4.update(instruction, clock_cycle, "flit 2")
-                    if instruction.counter / len(get_path) == 2:
+                    if instruction.counter // len(get_path) == 2:
                             if(get_path[instruction.counter % len(get_path)] == "1"):
                                 self.r1.update(instruction, clock_cycle, "flit 3")
                             if(get_path[instruction.counter % len(get_path)] == "2"):
@@ -236,16 +244,17 @@ class NoC:
                     
                     if instruction.counter == 3*(len(get_path)):
                         instruction.tail_next = 0
+                        instruction.counter = 7
                 
                 elif instruction.tail_next >=0 and instruction.tail_next < len(get_path):
                     if get_path[instruction.tail_next] == "1":
-                        self.r1.update(instruction, clock_cycle, "(tail sending {})".format(instruction.tail_next))
+                        self.r1.update(instruction, clock_cycle, "Tail")
                     elif get_path[instruction.tail_next] == "2":
-                        self.r2.update(instruction, clock_cycle, "(tail sending {})".format(instruction.tail_next))
+                        self.r2.update(instruction, clock_cycle, "Tail")
                     elif get_path[instruction.tail_next] == "3":
-                        self.r3.update(instruction, clock_cycle, "(tail sending {})".format(instruction.tail_next))
+                        self.r3.update(instruction, clock_cycle, "Tail")
                     elif get_path[instruction.tail_next] == "4":
-                        self.r4.update(instruction, clock_cycle, "(tail sending {})".format(instruction.tail_next))
+                        self.r4.update(instruction, clock_cycle, "Tail")
                     
                     instruction.tail_next += 1
                     
