@@ -1,5 +1,5 @@
 from input import list_of_instructions
-
+outfile = open('log.txt', 'w')
 
 class Link:
     input = False
@@ -23,7 +23,9 @@ class Router:
         self.counter = 0
 
     def update(self,instruction, clock_cyle, statement):
-        print("iss", clock_cyle, "pe ye ", statement, "iska source hai", instruction.source, "iska destination hai", instruction.destination)
+        L = ["Clock cycle: ", str(clock_cyle) + " ", "Flit: ", str(statement) + " ", "Source: ", str(instruction.source) + " ", "Destination: ", str(instruction.destination), "\n"]
+        outfile.writelines(L)
+        # print("Clock cycle:", clock_cyle, "Flit:", statement, "Source:", instruction.source, "Destination:", instruction.destination)
         return 
 
 
@@ -188,13 +190,13 @@ class NoC:
                 # print(get_path)
                 if instruction.head_sent < len(get_path):  
                     if get_path[instruction.head_sent] == "1":
-                        self.r1.update(instruction,clock_cycle,  "head sending {}".format(instruction.head_sent))
+                        self.r1.update(instruction,clock_cycle,  "(head sending {})".format(instruction.head_sent))
                     elif get_path[instruction.head_sent] == "2":
-                        self.r2.update(instruction, clock_cycle,  "head sending {}".format(instruction.head_sent))
+                        self.r2.update(instruction, clock_cycle,  "(head sending {})".format(instruction.head_sent))
                     elif get_path[instruction.head_sent] == "3":
-                        self.r3.update(instruction, clock_cycle, "head sending {}".format(instruction.head_sent))
+                        self.r3.update(instruction, clock_cycle, "(head sending {})".format(instruction.head_sent))
                     elif get_path[instruction.head_sent] == "4":
-                        self.r4.update(instruction, clock_cycle, "head sending {}".format(instruction.head_sent))
+                        self.r4.update(instruction, clock_cycle, "(head sending {})".format(instruction.head_sent))
                     
                     instruction.head_sent += 1
                     
@@ -237,13 +239,13 @@ class NoC:
                 
                 elif instruction.tail_next >=0 and instruction.tail_next < len(get_path):
                     if get_path[instruction.tail_next] == "1":
-                        self.r1.update(instruction, clock_cycle, "tail sending {}".format(instruction.tail_next))
+                        self.r1.update(instruction, clock_cycle, "(tail sending {})".format(instruction.tail_next))
                     elif get_path[instruction.tail_next] == "2":
-                        self.r2.update(instruction, clock_cycle, "tail sending {}".format(instruction.tail_next))
+                        self.r2.update(instruction, clock_cycle, "(tail sending {})".format(instruction.tail_next))
                     elif get_path[instruction.tail_next] == "3":
-                        self.r3.update(instruction, clock_cycle, "tail sending {}".format(instruction.tail_next))
+                        self.r3.update(instruction, clock_cycle, "(tail sending {})".format(instruction.tail_next))
                     elif get_path[instruction.tail_next] == "4":
-                        self.r4.update(instruction, clock_cycle, "tail sending {}".format(instruction.tail_next))
+                        self.r4.update(instruction, clock_cycle, "(tail sending {})".format(instruction.tail_next))
                     
                     instruction.tail_next += 1
                     
