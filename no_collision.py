@@ -22,6 +22,9 @@ class Router:
     def add_tail(self):
         self.counter = 0
 
+    def update(self,instruction, clock_cyle, statement):
+        print("iss", clock_cyle, "pe ye ", statement, "iska source hai", instruction.source, "iska destination hai", instruction.destination)
+        return 
 
 
 class Instruction:
@@ -34,8 +37,8 @@ class Instruction:
     f2 = ""
     f3 = ""
     tail = ""
-    counter = 0
-    tail_sent = 0
+    counter = -1
+    tail_next = -1
     path =  []
     def __init__(self, instuction):
         self.clock_cycle = int(instuction[0])
@@ -47,74 +50,62 @@ class Instruction:
         self.f3 = instuction[3][63:96]
         self.tail = "0000000000000000000000000000"
         self.path =  []
-        self.get_path()
     
     def get_path(self):
         #path according to the routing algo: Midsem = XY
+        self.path = []
         if self.source==self.destination:
             return
         if self.source == "1":
 
             if self.destination == "2":
-                self.path.append("1")
                 self.path.append("2")
 
             if self.destination == "3":
-                self.path.append("1")
                 self.path.append("2")
                 self.path.append("3")
 
             if self.destination == "4":
-                self.path.append("1")
                 self.path.append("4")
 
 
         if self.source == "2":
 
             if self.destination == "1":
-                self.path.append("2")
                 self.path.append("1")
 
             if self.destination == "3":
-                self.path.append("2")
                 self.path.append("3")
 
             if self.destination == "4":
-                self.path.append("2")
                 self.path.append("1")
                 self.path.append("4")
 
         if self.source == "3":
 
             if self.destination == "1":
-                self.path.append("3")
                 self.path.append("4")
                 self.path.append("1")
 
             if self.destination == "2":
-                self.path.append("3")
                 self.path.append("2")
 
             if self.destination == "4":
-                self.path.append("3")
                 self.path.append("4")
 
         if self.source == "4":
 
             if self.destination == "1":
-                self.path.append("4")
                 self.path.append("1")
 
             if self.destination == "2":
-                self.path.append("4")
                 self.path.append("3")
                 self.path.append("2")
 
             if self.destination == "3":
-                self.path.append("4")
                 self.path.append("3")
 
-        return
+        return self.path
 
 def print_list(list):
     for i in list:
@@ -183,76 +174,82 @@ class NoC:
     def play(self):
         total_tic = int(input("How many clock cycles do you want to simulate? "))
         queue = [] #add input objects to this queue
+        queue_temp = []
         for clock_cycle in range(total_tic):
+            queue = queue_temp.copy()
             x = self.check(clock_cycle)
             if len(x) > 0:
                 for i in x:
                     queue.append(i)
             
             for instruction in queue:
+                queue_temp = queue.copy()
                 get_path = instruction.get_path()
-                if instruction.head_sent < len(get_path):    
-                    clear_path = True
-                    for path in get_path:
-                        if(path == "1"):
-                            if self.r1.counter != 0:
-                                clear_path = False
-                        if(path == "2"):
-                            if self.r2.counter != 0:
-                                clear_path = False
-                        if(path == "3"):
-                            if self.r3.counter != 0:
-                                clear_path = False
-                        if(path == "4"):
-                            if self.r4.counter != 0:
-                                clear_path = False
-
-                    if clear_path:
-                        instruction.head_sent = 1
-                        for path in get_path:
-                            if(path == "1"):
-                                self.r1.update(instruction,"head sent")
-                            if(path == "2"):
-                                self.r2.update(instruction,"head sent")
-                            if(path == "3"):
-                                self.r3.update(instruction,"head sent")
-                            if(path == "4"):
-                                self.r4.update(instruction,"head sent")
+                # print(get_path)
+                if instruction.head_sent < len(get_path):  
+                    if get_path[instruction.head_sent] == "1":
+                        self.r1.update(instruction,clock_cycle,  "head sending {}".format(instruction.head_sent))
+                    elif get_path[instruction.head_sent] == "2":
+                        self.r2.update(instruction, clock_cycle,  "head sending {}".format(instruction.head_sent))
+                    elif get_path[instruction.head_sent] == "3":
+                        self.r3.update(instruction, clock_cycle, "head sending {}".format(instruction.head_sent))
+                    elif get_path[instruction.head_sent] == "4":
+                        self.r4.update(instruction, clock_cycle, "head sending {}".format(instruction.head_sent))
+                    
+                    instruction.head_sent += 1
+                    
+                    if instruction.head_sent == len(get_path):
+                        instruction.head_sent = 3
+                        instruction.counter = 0
                                 
-                elif instruction.head_sent == True and instruction.tail_next == False:
+                elif instruction.head_sent == 3 and instruction.tail_next == -1:
                     if instruction.counter / len(get_path) == 0:
-                            if(get_path[instruction.counter + 1] == "1"):
-                                self.r1.update(instruction, "filt 1")
-                            if(get_path[instruction.counter + 1] == "2"):
-                                self.r2.update(instruction, "filt 1")
-                            if(get_path[instruction.counter + 1] == "3"):
-                                self.r3.update(instruction, "filt 1")
-                            if(get_path[instruction.counter + 1] == "4"):
-                                self.r4.update(instruction, "filt 1")
+                            if(get_path[instruction.counter % len(get_path)] == "1"):
+                                self.r1.update(instruction, clock_cycle, "flit 1")
+                            if(get_path[instruction.counter % len(get_path)] == "2"):
+                                self.r2.update(instruction, clock_cycle, "flit 1")
+                            if(get_path[instruction.counter % len(get_path)] == "3"):
+                                self.r3.update(instruction, clock_cycle, "flit 1")
+                            if(get_path[instruction.counter % len(get_path)] == "4"):
+                                self.r4.update(instruction, clock_cycle, "flit 1")
                     if instruction.counter / len(get_path) == 1:
-                            if(get_path[instruction.counter + 1] == "1"):
-                                self.r1.update(instruction, "filt 2")
-                            if(get_path[instruction.counter + 1] == "2"):
-                                self.r2.update(instruction, "filt 2")
-                            if(get_path[instruction.counter + 1] == "3"):
-                                self.r3.update(instruction, "filt 2")
-                            if(get_path[instruction.counter + 1] == "4"):
-                                self.r4.update(instruction, "filt 2")
+                            if(get_path[instruction.counter % len(get_path)] == "1"):
+                                self.r1.update(instruction, clock_cycle, "flit 2")
+                            if(get_path[instruction.counter % len(get_path)] == "2"):
+                                self.r2.update(instruction, clock_cycle, "flit 2")
+                            if(get_path[instruction.counter % len(get_path)] == "3"):
+                                self.r3.update(instruction, clock_cycle, "flit 2")
+                            if(get_path[instruction.counter % len(get_path)] == "4"):
+                                self.r4.update(instruction, clock_cycle, "flit 2")
                     if instruction.counter / len(get_path) == 2:
-                            if(get_path[instruction.counter + 1] == "1"):
-                                self.r1.update(instruction, "filt 3")
-                            if(get_path[instruction.counter + 1] == "2"):
-                                self.r2.update(instruction, "filt 3")
-                            if(get_path[instruction.counter + 1] == "3"):
-                                self.r3.update(instruction, "filt 3")
-                            if(get_path[instruction.counter + 1] == "4"):
-                                self.r4.update(instruction, "filt 3")
+                            if(get_path[instruction.counter % len(get_path)] == "1"):
+                                self.r1.update(instruction, clock_cycle, "flit 3")
+                            if(get_path[instruction.counter % len(get_path)] == "2"):
+                                self.r2.update(instruction, clock_cycle, "flit 3")
+                            if(get_path[instruction.counter % len(get_path)] == "3"):
+                                self.r3.update(instruction, clock_cycle, "flit 3")
+                            if(get_path[instruction.counter % len(get_path)] == "4"):
+                                self.r4.update(instruction, clock_cycle, "flit 3")
                     instruction.counter += 1
-                    if instruction.counter == 3*len(get_path):
-                        instruction.tail_next = True
+                    
+                    if instruction.counter == 3*(len(get_path)):
+                        instruction.tail_next = 0
                 
-                elif instruction.tail_next == True:
-                    for i in 
+                elif instruction.tail_next >=0 and instruction.tail_next < len(get_path):
+                    if get_path[instruction.tail_next] == "1":
+                        self.r1.update(instruction, clock_cycle, "tail sending {}".format(instruction.tail_next))
+                    elif get_path[instruction.tail_next] == "2":
+                        self.r2.update(instruction, clock_cycle, "tail sending {}".format(instruction.tail_next))
+                    elif get_path[instruction.tail_next] == "3":
+                        self.r3.update(instruction, clock_cycle, "tail sending {}".format(instruction.tail_next))
+                    elif get_path[instruction.tail_next] == "4":
+                        self.r4.update(instruction, clock_cycle, "tail sending {}".format(instruction.tail_next))
+                    
+                    instruction.tail_next += 1
+                    
+                    if instruction.tail_next == len(get_path):
+                        queue_temp.remove(instruction)
+                        
                 
             
 n = NoC(1)
