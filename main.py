@@ -1,6 +1,5 @@
-from dis import Instruction
 from input import list_of_instructions
-
+outfile = open('log.txt', 'w')
 
 class Link:
     input = False
@@ -8,29 +7,37 @@ class Link:
     busy = False
 
 class Router:
-    head = ""
-    f1 = ""
-    f2 = ""
-    f3 = ""
-    tail = ""
-    def __init__(self,x):
-        self.x = x
-    def get_head(self,head):
-        self.head = head
-    def get_f1(self,f1):
-        self.f1 = f1
-    def get_f2(self,f2):
-        self.f2 = f2
-    def get_f3(self,f3):
-        self.f3 = f3
-    def get_tail(self,tail):
-        self.tail = tail
+    counter = 0 
+    source = ""
+    destination = ""
+    
+    def add_source(self, source):
+        self.source = source
+        self.counter += 1
+    def add_destination(self, destination):
+        self.destination = destination 
+        self.counter += 1
+    def add_flit(self):
+        self.counter += 1
+    def add_tail(self):
+        self.counter = 0
+
+    def update(self,instruction, clock_cyle, statement):
+        if len(instruction.path) == 1:
+            L = ["Clock cycle: ", str(clock_cyle) + " ", "Flit: ", str(statement) + " ", "Source: ", instruction.source + " ", "Destination: ", instruction.destination, "\n"]
+        else:
+            if instruction.counter%2== 0 or instruction.head_sent == 0 or instruction.tail_next == 0:
+                L = ["Clock cycle: ", str(clock_cyle) + " ", "Flit: ", str(statement) + " ", "Source: ", instruction.source + " ", "Destination: ", str(instruction.path[0]), "\n"]
+            else:
+                L = ["Clock cycle: ", str(clock_cyle) + " ", "Flit: ", str(statement) + " ", "Source: ", str(instruction.path[0]) + " ", "Destination: ", instruction.destination, "\n"]
+        outfile.writelines(L)
+        # print("Clock cycle:", clock_cyle, "Flit:", statement, "Source:", instruction.source, "Destination:", instruction.destination)
+        return 
 
 
-
-class Input:
+class Instruction:
     clock_cycle = 0
-    head_sent = False
+    head_sent = 0
     source = ""
     destination = ""
     head = ""
@@ -38,7 +45,8 @@ class Input:
     f2 = ""
     f3 = ""
     tail = ""
-    sucess = False
+    counter = -1
+    tail_next = -1
     path =  []
     def __init__(self, instuction):
         self.clock_cycle = int(instuction[0])
@@ -50,83 +58,71 @@ class Input:
         self.f3 = instuction[3][63:96]
         self.tail = "0000000000000000000000000000"
         self.path =  []
-        self.get_path()
     
     def get_path(self):
         #path according to the routing algo: Midsem = XY
+        self.path = []
         if self.source==self.destination:
             return
         if self.source == "1":
 
             if self.destination == "2":
-                self.path.append("1")
                 self.path.append("2")
 
             if self.destination == "3":
-                self.path.append("1")
                 self.path.append("2")
                 self.path.append("3")
 
             if self.destination == "4":
-                self.path.append("1")
                 self.path.append("4")
 
 
         if self.source == "2":
 
             if self.destination == "1":
-                self.path.append("2")
                 self.path.append("1")
 
             if self.destination == "3":
-                self.path.append("2")
                 self.path.append("3")
 
             if self.destination == "4":
-                self.path.append("2")
                 self.path.append("1")
                 self.path.append("4")
 
         if self.source == "3":
 
             if self.destination == "1":
-                self.path.append("3")
                 self.path.append("4")
                 self.path.append("1")
 
             if self.destination == "2":
-                self.path.append("3")
                 self.path.append("2")
 
             if self.destination == "4":
-                self.path.append("3")
                 self.path.append("4")
 
         if self.source == "4":
 
             if self.destination == "1":
-                self.path.append("4")
                 self.path.append("1")
 
             if self.destination == "2":
-                self.path.append("4")
                 self.path.append("3")
                 self.path.append("2")
 
             if self.destination == "3":
-                self.path.append("4")
                 self.path.append("3")
 
-        return
+        return self.path
 
-def print_list(list):
-    for i in list:
-        print("Source:",i.source,"Destination:",i.destination)
+# def print_list(list):
+#     for i in list:
+#         print("Source:",i.source,"Destination:",i.destination)
 
-def Print(list):
-    for i in list:
-        # print(i)
-        print(i)
+# def Print(list):
+#     for i in list:
+#         # print(i)
+#         print(i)
 
 class NoC:
     trafic1 = []
@@ -137,13 +133,19 @@ class NoC:
     l2 = Link()
     l3 = Link()
     l4 = Link()
-    router = Router(1)
+    
+    r1 = Router()
+    r2 = Router()
+    r3 = Router()
+    r4 = Router()
+    
+    
     def __init__(self, p):
         self.p = p
     def add_intruction(self, intructions):
         for x in intructions:
             x = list(map(str,x.split()))
-            input = Input(x)
+            input = Instruction(x)
 
             if input.source == "1":
                 self.trafic1.append(input)
@@ -158,9 +160,6 @@ class NoC:
                 self.trafic4.append(input)
                 self.trafic4.sort(key=lambda x: x.clock_cycle)
             
-    def perform(self):
-        
-        return 
         
     def check(self, clock_cycle):
         list = []
@@ -183,96 +182,88 @@ class NoC:
     def play(self):
         total_tic = int(input("How many clock cycles do you want to simulate? "))
         queue = [] #add input objects to this queue
-        p = 0
-        c = 0
+        queue_temp = []
         for clock_cycle in range(total_tic):
+            queue = queue_temp.copy()
             x = self.check(clock_cycle)
             if len(x) > 0:
                 for i in x:
                     queue.append(i)
-
-            print_list(queue)
-            print("")
-            for i in queue:
-                if i.head_sent==False:
-                    get_path = i.path
-                    # count = 0
-                    for path in get_path:
-                        if(path=="1" and self.l1.busy==False):
-                            self.l1.busy = True
-                            
-
-                        if(path=="2" and self.l2.busy==False):
-                            self.l2.busy = True
-                            
-
-                        if(path=="3" and self.l3.busy==False):
-                            self.l3.busy = True
-                            
-
-                        if(path=="4" and self.l4.busy==False):
-                            self.l4.busy = True
-                            
-
+            
+            for instruction in queue:
+                queue_temp = queue.copy()
+                get_path = instruction.get_path()
+                # print(get_path)
+                #print("Clock Cycle: ",clock_cycle,"Source: ", instruction.source ,instruction.head_sent, instruction.tail_next)
+                if instruction.head_sent < len(get_path):  
+                    if get_path[instruction.head_sent] == "1":
+                        self.r1.update(instruction,clock_cycle,  "Head")
+                    elif get_path[instruction.head_sent] == "2":
+                        self.r2.update(instruction, clock_cycle,  "Head")
+                    elif get_path[instruction.head_sent] == "3":
+                        self.r3.update(instruction, clock_cycle, "Head")
+                    elif get_path[instruction.head_sent] == "4":
+                        self.r4.update(instruction, clock_cycle, "Head")
                     
-                    print(i.source,i.destination)
-                    self.router.get_head(i.head)
-                    i.head_sent = True
-                    break
-                        
-
-                else:
-                    if(c==0):
-                        self.router.get_f1(i.f1)
-                        c += 1
-                        break
-
-                    if(c==1):
-                        self.router.get_f2(i.f2)
-                        c += 1
-                        break
-
-                    if(c==2):
-                        self.router.get_f3(i.f3)
-                        c += 1
-                        break
-
-                    if(c==3):
-                        i.sucess = True
-                        self.router.get_tail(i.tail)
-                        print("GOT IT", i.source, i.destination)
-                        self.l1.busy = False
-                        self.l2.busy = False
-                        self.l3.busy = False
-                        self.l4.busy = False
-                        c = 0
-                        
-
-        #             #check if the link is busy or free, if free, send the packet
+                    instruction.head_sent += 1
                     
-        #             # if tail is sent then i.sucess = True
-                    
-                if i.sucess:
-                    queue.remove(i)
+                    if instruction.head_sent == len(get_path):
+                        instruction.head_sent = 3
+                        instruction.counter = 0
 
+
+                elif instruction.head_sent == 3 and instruction.tail_next == -1:
+                    if instruction.counter // len(get_path) == 0:
+                            if(get_path[instruction.counter % len(get_path)] == "1"):
+                                self.r1.update(instruction, clock_cycle, "flit 1")
+                            if(get_path[instruction.counter % len(get_path)] == "2"):
+                                self.r2.update(instruction, clock_cycle, "flit 1")
+                            if(get_path[instruction.counter % len(get_path)] == "3"):
+                                self.r3.update(instruction, clock_cycle, "flit 1")
+                            if(get_path[instruction.counter % len(get_path)] == "4"):
+                                self.r4.update(instruction, clock_cycle, "flit 1")
+                    if instruction.counter // len(get_path) == 1:
+                            if(get_path[instruction.counter % len(get_path)] == "1"):
+                                self.r1.update(instruction, clock_cycle, "flit 2")
+                            if(get_path[instruction.counter % len(get_path)] == "2"):
+                                self.r2.update(instruction, clock_cycle, "flit 2")
+                            if(get_path[instruction.counter % len(get_path)] == "3"):
+                                self.r3.update(instruction, clock_cycle, "flit 2")
+                            if(get_path[instruction.counter % len(get_path)] == "4"):
+                                self.r4.update(instruction, clock_cycle, "flit 2")
+                    if instruction.counter // len(get_path) == 2:
+                            if(get_path[instruction.counter % len(get_path)] == "1"):
+                                self.r1.update(instruction, clock_cycle, "flit 3")
+                            if(get_path[instruction.counter % len(get_path)] == "2"):
+                                self.r2.update(instruction, clock_cycle, "flit 3")
+                            if(get_path[instruction.counter % len(get_path)] == "3"):
+                                self.r3.update(instruction, clock_cycle, "flit 3")
+                            if(get_path[instruction.counter % len(get_path)] == "4"):
+                                self.r4.update(instruction, clock_cycle, "flit 3")
+                    instruction.counter += 1
+                    
+                    if instruction.counter == 3*(len(get_path)):
+                        instruction.tail_next = 0
+                        instruction.counter = 7
                 
-        
-        # for i in queue:
-        #     get_path = i.get_path()
-        #     for path in get_path:
-        #         pass
-        #             #check if the link is busy or free, if free, send the packet
+                elif instruction.tail_next >=0 and instruction.tail_next < len(get_path):
+                    if get_path[instruction.tail_next] == "1":
+                        self.r1.update(instruction, clock_cycle, "Tail")
+                    elif get_path[instruction.tail_next] == "2":
+                        self.r2.update(instruction, clock_cycle, "Tail")
+                    elif get_path[instruction.tail_next] == "3":
+                        self.r3.update(instruction, clock_cycle, "Tail")
+                    elif get_path[instruction.tail_next] == "4":
+                        self.r4.update(instruction, clock_cycle, "Tail")
                     
-        #     if i.success:
-        #         queue.remove(i)
+                    instruction.tail_next += 1
+                    
+                    if instruction.tail_next == len(get_path):
+                        queue_temp.remove(instruction)
+                        
+                
+            
 n = NoC(1)
 n.add_intruction(list_of_instructions)
-# Print(n.trafic1)
-# print("")
-# Print(n.trafic2)
-# print("")
-# Print(n.trafic3)
-# print("")
-# Print(n.trafic4)
 
 n.play()
