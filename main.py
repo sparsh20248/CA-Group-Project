@@ -252,7 +252,8 @@ class NoC:
                         instruction.tail_next = True
                 
                 elif instruction.tail_next == True:
-                    for i in 
+                    for i in x:
+                        pass
                 
             
 n = NoC(1)
