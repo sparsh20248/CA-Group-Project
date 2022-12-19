@@ -201,9 +201,6 @@ class NoC:
     r4 = Router()
     list1 = []
     
-    
-    def __init__(self, p):
-        self.p = p
     def add_intruction(self, intructions):
         for x in intructions:
             x = list(map(str,x.split()))
@@ -400,6 +397,7 @@ class NoC:
     
     def play(self):
         total_tic = int(input("How many clock cycles do you want to simulate? "))
+        routing = int(input("What routing algo to implement ?. Type 1 for XY and 2 for YX  "))
         queue = [] #add input objects to this queue
         queue_temp = []
         for clock_cycle in range(total_tic):
@@ -411,11 +409,10 @@ class NoC:
             
             for instruction in queue:
                 queue_temp = queue.copy()
-                get_path = instruction.get_path_XY()
-               
+                if routing == 1:get_path = instruction.get_path_XY()
+                else: get_path = instruction.get_path_YX()
                 if instruction.head_sent < len(get_path):  
                     if get_path[instruction.head_sent] == "1":
-
                         self.func1(instruction)
                         if(instruction.start_time == -1):
                             instruction.start_time = clock_cycle 
@@ -539,10 +536,8 @@ class NoC:
                         self.list1.append(instruction)
                         queue_temp.remove(instruction)
                 
-                        
-                
-            
-n = NoC(1)
+                           
+n = NoC()
 n.add_intruction(list_of_instructions)
 
 n.play()
