@@ -1,0 +1,9 @@
+Clock cycle: 0 Flit: Head Source: 1 Destination: 4
+Clock cycle: 1 Flit: Head Source: 4 Destination: 3
+Clock cycle: 1 Flit: Head Source: 4 Destination: 3
+Clock cycle: 2 Flit: flit 1 Source: 1 Destination: 4
+Clock cycle: 2 Flit: flit 1 Source: 4 Destination: 3
+Clock cycle: 3 Flit: flit 1 Source: 4 Destination: 3
+Clock cycle: 3 Flit: flit 2 Source: 4 Destination: 3
+Clock cycle: 4 Flit: flit 2 Source: 1 Destination: 4
+Clock cycle: 4 Flit: flit 3 Source: 4 Destination: 3
