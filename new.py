@@ -13,7 +13,6 @@ class Router:
     busy = False
     source = ""
     destination = ""
-    transfer = []
     def __init__(self, name):
         self.name = name
     def add_source(self, source):
@@ -30,7 +29,6 @@ class Router:
         self.counter = 0
     def update(self,instruction, clock_cyle, statement, source, destination):
         L = ["Clock cycle: ", str(clock_cyle) + " ", "Flit: ", str(statement) + " ", "Source: ", source.name + " ", "Destination: ", destination.name, "\n"]
-        self.transfer.append([source, destination])
         outfile.writelines(L)
         print("Clock cycle:", clock_cyle, "Flit:", statement, "Source:", instruction.source, "Destination:", instruction.destination)
         return 
@@ -48,17 +46,14 @@ class Instruction:
     f2 = ""
     f3 = ""
     tail = ""
-    head_index = 0
-    f1_index = 0
-    f2_index = 0
-    f3_index = 0
-    tail_index = 0
+    index = 0
     clock_cycle = 0
     end_time = 0
     start_time = -1
     source = ""
     destination = ""
-    def __init__(self, instruction, routing, routing_list):
+    def __init__(self, instruction, routing, routing_list, index):
+        self.index = index
         self.clock_cycle = int(instruction[0])
         self.source = instruction[1]
         self.destination = instruction[2]
@@ -218,9 +213,10 @@ class NoC:
     r4 = Router("Router 4")
     router_list = [r1, r2, r3, r4]
     def add_instruction(self, instructions, routing):
+        index = 1
         for x in instructions:
             x = list(map(str,x.split()))    
-            input = Instruction(x, routing, self.router_list)
+            input = Instruction(x, routing, self.router_list, index)
             self.all_intructions.append(input)
             print(input.source)
             if(input.source == "1"):
@@ -235,6 +231,7 @@ class NoC:
             if(input.source == "4"):
                 self.traffic4.append(input)
                 self.traffic4.sort(key = lambda x: x.clock_cycle)
+            index+=1
 
     def check(self, clock_cycle):
         list = []
@@ -253,6 +250,7 @@ class NoC:
         return list
     
     def play(self):
+        everything = []
         total_tic = int(input("Enter the total number of clock cycles: "))
         queue = []
         queue_temp = []
@@ -269,9 +267,11 @@ class NoC:
             
             for instruction in queue:
                 queue_temp = queue.copy()
-                if len(instruction.head_path) > 1 and instruction.head_path[1].busy == False:
+                if len(instruction.head_path) > 1 and instruction.head_path[1].busy == 0 and (instruction.head_path[0].busy == 0 or instruction.head_path[0].busy == instruction.index):
                     if instruction.start_time == -1: instruction.start_time = clock_cycle
-                    instruction.head_path[1].busy = True
+                    instruction.head_path[1].busy = instruction.index
+                    instruction.head_path[0].busy = instruction.index
+                    everything.append([instruction.head_path[0],instruction.head_path[1]])
                     instruction.head_path[0].update(instruction, clock_cycle, "Head", instruction.head_path[0], instruction.head_path[1])
                     instruction.head_path.pop(0)
                     if len(instruction.route) == 2: continue
@@ -280,6 +280,7 @@ class NoC:
                     check = False
                     if(len(instruction.f1_path) > 1) :
                         check = True
+                        everything.append([instruction.f1_path[0],instruction.f1_path[1]])
                         instruction.f1_path[0].update(instruction, clock_cycle, "Flit 1", instruction.f1_path[0], instruction.f1_path[1])
                         instruction.f1_path.pop(0)
                     if check and len(instruction.route) == 2: continue
@@ -288,6 +289,7 @@ class NoC:
                     check = False
                     if(len(instruction.f2_path) > 1) :
                         check = True
+                        everything.append([instruction.f2_path[0],instruction.f2_path[1]])
                         instruction.f2_path[0].update(instruction, clock_cycle, "Flit 2", instruction.f2_path[0], instruction.f2_path[1])
                         instruction.f2_path.pop(0)
                     if check and len(instruction.route) == 2: continue
@@ -296,6 +298,7 @@ class NoC:
                     check = False
                     if(len(instruction.f3_path) > 1) :
                         check = True
+                        everything.append([instruction.f3_path[0],instruction.f3_path[1]])
                         instruction.f3_path[0].update(instruction, clock_cycle, "Flit 3", instruction.f3_path[0], instruction.f3_path[1])
                         instruction.f3_path.pop(0)
                     if check and len(instruction.route) == 2: continue
@@ -304,21 +307,22 @@ class NoC:
                     check = False
                     if(len(instruction.tail_path) > 1) :
                         check = True
+                        everything.append([instruction.tail_path[0],instruction.tail_path[1]])
                         instruction.tail_path[0].update(instruction, clock_cycle, "Tail", instruction.tail_path[0], instruction.tail_path[1])
-                        instruction.tail_path[1].busy = False
+                        instruction.tail_path[0].busy = False
                         instruction.tail_path.pop(0)
                     if len(instruction.tail_path) == 1 and instruction.end_time == 0: 
                         instruction.update_end(clock_cycle)
+                        instruction.tail_path[0].busy = False
                         # queue.pop(0)
+                        
+        return everything
                         
 
         
-
-
-
 n = NoC()
 
-n.play()
+everything = n.play()
 
 def plot_latency(n):
     list = []
@@ -335,12 +339,44 @@ def plot_latency(n):
     plt.bar(X1, Y1, color = 'blue', width = 0.4)
     plt.show()
 
-def plot_links(n):
-    list = []
-    for i in n.router_list:
-        for j in i.transfer:
-            print(j[0].name, j[1].name)
-        
+def plot_links(everything):
+    list = [0, 0, 0, 0, 0, 0, 0, 0]
+    name = ["R1-R2", "R1-R4", "R2-R3", "R3-R4", "R1-PE1", "R2-PE2", "R3-PE3", "R4-PE4"]
+    print(len(n.router_list))
+    for j in everything:
+        print(j[0].name, j[1].name)
+        if j[0].name == "Router 1" and j[1].name == "Router 2":
+            list[0]+=1
+        if j[0].name == "Router 2" and j[1].name == "Router 1":
+            list[0]+=1
+        if j[0].name == "Router 1" and j[1].name == "Router 4":
+            list[1]+=1
+        if j[0].name == "Router 4" and j[1].name == "Router 1":
+            list[1]+=1
+        if j[0].name == "Router 3" and j[1].name == "Router 2":
+            list[2]+=1
+        if j[0].name == "Router 2" and j[1].name == "Router 3":
+            list[2]+=1
+        if j[0].name == "Router 4" and j[1].name == "Router 3":
+            list[3]+=1
+        if j[0].name == "Router 3" and j[1].name == "Router 4":
+            list[3]+=1
+        print(list)
+
+    
+    for i in n.all_intructions:
+        if i.destination == "1":
+            list[4]+=3
+        if i.destination == "2":
+            list[5]+=3
+        if i.destination == "3":
+            list[6]+=3
+        if i.destination == "4":
+            list[7]+=3
+    
+    plt.bar(name, list, color = 'blue', width = 0.4)
+    plt.show()
 
 plot_latency(n)
-plot_links(n)
+plot_links(everything)
+
