@@ -56,7 +56,7 @@ Through the log file we plot two graphs.
 
 The first graph keeps a check of the numberof flits that pass through a given connection and plots them.
 
-The second graph depicts the number of clock cycles a given flit takes to go from the source to destination.
+The second graph depicts the number of clock cycles a given packet takes to go from the source to destination.
 
 ## The Building and Usage Instructions
 We run the file by the following command in terminal:
