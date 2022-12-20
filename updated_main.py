@@ -397,7 +397,12 @@ class NoC:
     
     def play(self):
         total_tic = int(input("How many clock cycles do you want to simulate? "))
-        routing = int(input("What routing algo to implement ?. Type 1 for XY and 2 for YX  "))
+        routing = int(input("What routing algo to implement? Type 1 for XY and 2 for YX "))
+        if (routing != 1 and routing != 2):
+            while (True):
+                routing = int(input("What routing algo to implement? Type 1 for XY and 2 for YX "))
+                if (routing == 1 or routing == 2):
+                    break
         queue = [] #add input objects to this queue
         queue_temp = []
         for clock_cycle in range(total_tic):
@@ -559,7 +564,7 @@ plt.subplot(1, 2, 1)
 plt.bar(X, Y, color ='maroon', width = 0.4)
 plt.xlabel("Links")
 plt.ylabel("No. of flits transferred")
-plt.title("No. of flits transferred as a function of conections")
+plt.title("No. of flits transferred as a function of connections")
 plt.subplot(1, 2, 2)
 plt.plot(X1, Y1, color ='maroon', marker = 'o')
 plt.ylabel('Latency of Packets')
