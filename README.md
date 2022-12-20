@@ -52,7 +52,7 @@ The simulator outputs a ```log file``` which indicates:
 ## The Usage of your Graph Plotter
 Through the log file we plot two graphs.
 1. A bar graph which plots the number of flits sent over a connection. 
-2. A line graph showing the packet transfer latency for each packet.
+2. A bar graph showing the packet transfer latency for each packet.
 
 The first graph keeps a check of the numberof flits that pass through a given connection and plots them.
 
