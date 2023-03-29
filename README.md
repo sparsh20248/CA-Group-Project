@@ -1,9 +1,9 @@
 # CA-Project Cycle Accurate Simulator for an NoC Router and Mesh
 
 Group number 6  
-Rahul Sehgal | 2020248  
+Rahul Sehgal | 2020232 
 Sahas Marwah | 2020237  
-Sparsh Mehrotra | 2020232  
+Sparsh Mehrotra | 2020248  
 Yash Thakran | 2020269
 
 
