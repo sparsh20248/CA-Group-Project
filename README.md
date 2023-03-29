@@ -2,7 +2,6 @@
 
 Group number 6  
 Rahul Sehgal | 2020232
-
 Sahas Marwah | 2020237  
 Sparsh Mehrotra | 2020248  
 Yash Thakran | 2020269
